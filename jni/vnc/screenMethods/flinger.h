@@ -23,9 +23,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "screenFormat.h"
 
 int initFlinger(void);
+#ifdef DVNC_STATIC_WRAPPER
+#include "flinger/flinger.h"
+static inline void closeFlinger(void) { return close_flinger(); }
+static inline unsigned char *readBufferFlinger(void) { return readfb_flinger(); }
+static inline unsigned char *checkBufferFlinger(void) { return checkfb_flinger(); }
+static inline screenFormat getScreenFormatFlinger(void) { return getscreenformat_flinger(); }
+#else
 void closeFlinger(void);
 unsigned char *readBufferFlinger(void);
 unsigned char *checkBufferFlinger(void);
 screenFormat getScreenFormatFlinger(void);
+#endif
 
 #endif

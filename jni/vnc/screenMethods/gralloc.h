@@ -23,8 +23,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "screenFormat.h"
 
 int initGralloc(void);
+#ifdef DVNC_STATIC_WRAPPER
+#include "gralloc/gralloc.h"
+static inline void closeGralloc(void) { close_gralloc(); }
+static inline unsigned char *readBufferGralloc(void) { return readfb_gralloc(); }
+static inline screenFormat getScreenFormatGralloc(void) { return getscreenformat_gralloc(); }
+#else
 void closeGralloc(void);
 unsigned char *readBufferGralloc(void);
 screenFormat getScreenFormatGralloc(void);
-
+#endif
 #endif

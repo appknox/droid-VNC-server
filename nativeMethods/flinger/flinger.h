@@ -21,13 +21,14 @@
 #define DISPLAY_BINDER
 
 #ifdef __cplusplus
-#define L(...) __android_log_print(ANDROID_LOG_INFO,"VNCserver",__VA_ARGS__);printf(__VA_ARGS__);
+#include "screenFormat.h"
 
 
 extern "C" {
 #endif
-  unsigned int * readfb_flinger();
-  unsigned int * checkfb_flinger();
+  unsigned char * readfb_flinger();
+  unsigned char * checkfb_flinger();
+  screenFormat getscreenformat_flinger();
   int init_flinger();
   void close_flinger();
 #ifdef __cplusplus

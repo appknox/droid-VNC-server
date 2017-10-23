@@ -43,9 +43,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <errno.h>
 
 #include "screenFormat.h"
-
-#define L(...) do{ __android_log_print(ANDROID_LOG_INFO,"VNCserver",__VA_ARGS__);printf(__VA_ARGS__); } while (0);
 #endif
+
+#include <stdio.h>
+#define L(...) do{ __android_log_print(ANDROID_LOG_INFO,"VNCserver",__VA_ARGS__);fprintf(stderr, __VA_ARGS__); } while (0);
 
 struct fbinfo {
     unsigned int version;
@@ -76,6 +77,7 @@ void setIdle(int i);
 void close_app();
 screenFormat screenformat;
 
+#ifndef DVNC_STATIC_WRAPPER
 #ifdef NOAPP
 #define DVNC_FILES_PATH "/data/local/tmp"
 #define DVNC_LIB_PATH "/data/local/tmp"
@@ -85,6 +87,7 @@ screenFormat screenformat;
 #endif
 
 #define ARR_LEN(a) (sizeof(a)/sizeof(a)[0])
-static int compiled_sdks[] = {18};
+static int compiled_sdks[] = {18, PLATFORM_SDK_VERSION};
+#endif
 
 #endif

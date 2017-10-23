@@ -29,13 +29,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "libvncserver/scale.h"
 #include "rfb/rfb.h"
 #include "rfb/keysym.h"
+#include "rfb/rfbregion.h"
 #include "suinput.h"
 
+#include <time.h>
 
 #define CONCAT2(a,b) a##b
 #define CONCAT2E(a,b) CONCAT2(a,b)
 #define CONCAT3(a,b,c) a##b##c
 #define CONCAT3E(a,b,c) CONCAT3(a,b,c)
+
+#define likely(x)       __builtin_expect((x),1)
+#define unlikely(x)     __builtin_expect((x),0)
 
 char VNC_PASSWORD[256] = "";
 char VNC_PASSWD_FILE[256] = "";
@@ -98,7 +103,7 @@ ClientGoneHookPtr clientGone(rfbClientPtr cl)
 	return 0;
 }
 
-rfbNewClientHookPtr clientHook(rfbClientPtr cl)
+enum rfbNewClientAction clientHook(rfbClientPtr cl)
 {
 	if (scaling!=100)
 	{
@@ -350,6 +355,7 @@ void initGrabberMethod()
 		initFlinger();
 }
 
+#if 0
 rfbClientPtr createRepeaterClient()
 {
 	rfbClientPtr cl;
@@ -385,6 +391,7 @@ rfbClientPtr createRepeaterClient()
 
 	return cl;
 }
+#endif
 
 void printUsage(char **argv)
 {
@@ -397,7 +404,7 @@ void printUsage(char **argv)
 		"-r <rotation>\t- Screen rotation (degrees) (0,90,180,270)\n"
 		"-R <host:port>\t- Host for reverse connection\n"
 		"-s <scale>\t- Scale percentage (20,30,50,100,150)\n"
-		"-z\t\t- Rotate display 180º (for zte compatibility)\n"
+		"-z\t\t- Rotate display 180 (for zte compatibility)\n"
 		"-U <host:port>\t- UltraVNC Repeater host and port\n"
 		"-S <id>\t\t- UltraVNC Repeater Numerical Server ID for MODE 2\n"
 		"-v\t\t- Output version\n"
@@ -542,12 +549,15 @@ int main(int argc, char **argv)
 
 	rfbClientPtr repeater = NULL;
 
+#if 0
 	if (repeaterHost != NULL)
 		repeater = createRepeaterClient();
+#endif
 
 	while (1) {
 		usec=(vncscr->deferUpdateTime+standby)*1000;
 		clock_t start = clock();
+#if 0
 		if (repeaterHost != NULL)
 		{
 			//L("Checking if connection to repeater needs to be reestablished.\n");
@@ -558,6 +568,7 @@ int main(int argc, char **argv)
 				repeater = createRepeaterClient();
 			}
 		}
+#endif
 
 		rfbProcessEvents(vncscr,usec);
 

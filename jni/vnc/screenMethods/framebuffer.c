@@ -76,12 +76,8 @@ int initFB(void)
     (int)scrinfo.bits_per_pixel);
 
   size_t size = scrinfo.yres_virtual;
-  if (size < scrinfo.yres * 2) {
-    L("Using Droid workaround\n");
-    size = scrinfo.yres * 2;
-  }
 
-  if ((scrinfo.bits_per_pixel == 24)) {
+  if (scrinfo.bits_per_pixel == 24) {
     scrinfo.bits_per_pixel = 32;
     L("24-bit XRGB display detected\n");
   }

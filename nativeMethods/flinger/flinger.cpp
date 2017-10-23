@@ -20,6 +20,7 @@
 #include <fcntl.h>
 
 #include "flinger.h"
+#include "../common.h"
 #include "screenFormat.h"
 
 #include <binder/IPCThreadState.h>
@@ -36,7 +37,7 @@ static uint32_t DEFAULT_DISPLAY_ID = ISurfaceComposer::eDisplayIdMain;
 static const int COMPONENT_YUV = 0xFF;
 int32_t displayId = DEFAULT_DISPLAY_ID;
 size_t Bpp = 32;
-sp<IBinder> display = SurfaceComposerClient::getBuiltInDisplay(displayId);
+sp<IBinder> display;
 ScreenshotClient *screenshotClient=NULL;
 
 struct PixelFormatInformation {
@@ -213,26 +214,32 @@ extern "C" int init_flinger()
 
     L("--Initializing JellyBean access method--\n");
 
+    display = SurfaceComposerClient::getBuiltInDisplay(displayId);
+    if (display == nullptr) {
+        L("Unable to get handle for display %d\n", displayId);
+        return -1;
+    }
+
     screenshotClient = new ScreenshotClient();
     L("ScreenFormat: %d\n", screenshotClient->getFormat());
-    errcode = screenshotClient->update(display, Rect(), true);
+    errcode = screenshotClient->update(display, Rect(), false);
     L("Screenshot client updated its display on init.\n");
-    if (display != NULL && errcode == NO_ERROR)
+    if (errcode == NO_ERROR)
         return 0;
     else
         return -1;
 }
 
-extern "C" unsigned int *checkfb_flinger()
+extern "C" unsigned char *checkfb_flinger()
 {
-    screenshotClient->update(display, Rect(), true);
+    screenshotClient->update(display, Rect(), false);
     void const* base = screenshotClient->getPixels();
-    return (unsigned int*)base;
+    return (unsigned char*)base;
 }
 
-extern "C" unsigned int *readfb_flinger()
+extern "C" unsigned char *readfb_flinger()
 {
-    screenshotClient->update(display, Rect(), true);
+    screenshotClient->update(display, Rect(), false);
     void const* base = 0;
     uint32_t w, h, s;
 
@@ -242,6 +249,7 @@ extern "C" unsigned int *readfb_flinger()
     s = screenshotClient->getStride();
 
     if (s > w) {
+        return NULL;
         // If stride is greater than width, then the image is non-contiguous in memory
         // so we have copy it into a new array such that it is
         void *new_base = malloc(w * h * Bpp);
@@ -253,12 +261,13 @@ extern "C" unsigned int *readfb_flinger()
             tmp_ptr = (void *)((char *)tmp_ptr + w * Bpp);
             base = (void *)((char *)base + s * Bpp);
         }
-        return (unsigned int *)new_base;
+        return (unsigned char *)new_base;
     }
-    return (unsigned int *)base;
+    return (unsigned char *)base;
 }
 
 extern "C" void close_flinger()
 {
-    free(screenshotClient);
+    display = nullptr;
+    delete screenshotClient;
 }

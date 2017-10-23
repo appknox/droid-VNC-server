@@ -22,15 +22,18 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "gralloc.h"
 #include "common.h"
 
+#ifndef DVNC_STATIC_WRAPPER
 void *gralloc_lib = NULL;
 
 
 close_fn_type close_gralloc = NULL;
 readfb_fn_type readfb_gralloc = NULL;
 getscreenformat_fn_type getscreenformat_gralloc = NULL;
+#endif
 
 int initGralloc(void)
 {
+#ifndef DVNC_STATIC_WRAPPER
   L("--Loading gralloc native lib--\n");
 
   int i,len;
@@ -72,24 +75,31 @@ int initGralloc(void)
       L("Couldn't load get_screenformat! Error string: %s\n",dlerror());
       continue;
     }
+#define FAIL continue
+#else
+#define FAIL return -1
+#endif
 
     int ret = init_gralloc();
     if (ret == -1) {
       L("Gralloc method not supported by this device!\n");
-      continue;
+      FAIL;
     }
 
     screenformat = getScreenFormatGralloc();
     if ( screenformat.width <= 0 ) {
       L("Error: I have received a bad screen size from gralloc.\n");
-      continue;
+      FAIL;
     }
     return 0;
+#ifndef DVNC_STATIC_WRAPPER
   }
 
   return -1;
+#endif
 }
 
+#ifndef DVNC_STATIC_WRAPPER
 screenFormat getScreenFormatGralloc(void)
 {
   screenFormat f;
@@ -112,4 +122,4 @@ unsigned char *readBufferGralloc(void)
     return readfb_gralloc();
   return NULL;
 }
-
+#endif
